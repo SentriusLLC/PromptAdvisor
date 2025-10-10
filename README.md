@@ -1,6 +1,6 @@
-# Prompt Validator Service
+# Prompt Advisor Service
 
-A FastAPI-based service for validating prompts against ATPL (AI Trust, Privacy, and Legal) criteria.
+A FastAPI-based service for validating prompts against ATPL (AI Trust, Privacy, and Legal), linguistic, and efficiency criteria.
 
 ## Features
 
