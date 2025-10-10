@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: prompt-validator-config
+  name: prompt-advisor-config
 data:
   HOST: "0.0.0.0"
   PORT: "8000"
@@ -18,7 +18,7 @@ data:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: prompt-validator-secrets
+  name: prompt-advisor-secrets
 type: Opaque
 stringData:
   LLM_API_KEY: "your-api-key-here"
@@ -28,22 +28,22 @@ stringData:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: prompt-validator
+  name: prompt-advisor
   labels:
-    app: prompt-validator
+    app: prompt-advisor
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: prompt-validator
+      app: prompt-advisor
   template:
     metadata:
       labels:
-        app: prompt-validator
+        app: prompt-advisor
     spec:
       containers:
-      - name: prompt-validator
-        image: prompt-validator:latest
+      - name: prompt-advisor
+        image: prompt-advisor:latest
         ports:
         - containerPort: 8000
           name: http
@@ -51,69 +51,69 @@ spec:
         - name: HOST
           valueFrom:
             configMapKeyRef:
-              name: prompt-validator-config
+              name: prompt-advisor-config
               key: HOST
         - name: PORT
           valueFrom:
             configMapKeyRef:
-              name: prompt-validator-config
+              name: prompt-advisor-config
               key: PORT
         - name: ATPL_SCHEMA_URL
           valueFrom:
             configMapKeyRef:
-              name: prompt-validator-config
+              name: prompt-advisor-config
               key: ATPL_SCHEMA_URL
         - name: LLM_ENDPOINT
           valueFrom:
             configMapKeyRef:
-              name: prompt-validator-config
+              name: prompt-advisor-config
               key: LLM_ENDPOINT
         - name: LLM_API_KEY
           valueFrom:
             secretKeyRef:
-              name: prompt-validator-secrets
+              name: prompt-advisor-secrets
               key: LLM_API_KEY
               optional: true
         - name: LLM_CUSTOM_HEADERS
           valueFrom:
             secretKeyRef:
-              name: prompt-validator-secrets
+              name: prompt-advisor-secrets
               key: LLM_CUSTOM_HEADERS
               optional: true
         - name: LLM_MODEL
           valueFrom:
             configMapKeyRef:
-              name: prompt-validator-config
+              name: prompt-advisor-config
               key: LLM_MODEL
         - name: LLM_ENABLED
           valueFrom:
             configMapKeyRef:
-              name: prompt-validator-config
+              name: prompt-advisor-config
               key: LLM_ENABLED
         - name: WEIGHT_PURPOSE
           valueFrom:
             configMapKeyRef:
-              name: prompt-validator-config
+              name: prompt-advisor-config
               key: WEIGHT_PURPOSE
         - name: WEIGHT_SAFETY
           valueFrom:
             configMapKeyRef:
-              name: prompt-validator-config
+              name: prompt-advisor-config
               key: WEIGHT_SAFETY
         - name: WEIGHT_COMPLIANCE
           valueFrom:
             configMapKeyRef:
-              name: prompt-validator-config
+              name: prompt-advisor-config
               key: WEIGHT_COMPLIANCE
         - name: WEIGHT_PROVENANCE
           valueFrom:
             configMapKeyRef:
-              name: prompt-validator-config
+              name: prompt-advisor-config
               key: WEIGHT_PROVENANCE
         - name: WEIGHT_AUTONOMY
           valueFrom:
             configMapKeyRef:
-              name: prompt-validator-config
+              name: prompt-advisor-config
               key: WEIGHT_AUTONOMY
         resources:
           requests:
@@ -138,9 +138,9 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: prompt-validator
+  name: prompt-advisor
   labels:
-    app: prompt-validator
+    app: prompt-advisor
 spec:
   type: ClusterIP
   ports:
@@ -149,4 +149,4 @@ spec:
     protocol: TCP
     name: http
   selector:
-    app: prompt-validator
+    app: prompt-advisor

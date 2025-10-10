@@ -1,30 +1,34 @@
-FROM python:3.11-slim
+FROM python:3.11-bookworm
 
-# Set working directory
 WORKDIR /app
 
 # Install system dependencies
+#RUN apt-get update && apt-get install -y --no-install-recommends gcc && rm -rf /var/lib/apt/lists/*
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
+    libblas-dev liblapack-dev gfortran build-essential
 
-# Copy requirements first for better caching
+
+# Copy requirements early for caching
 COPY requirements.txt .
 
-# Install Python dependencies
+# Install Python deps
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
-COPY prompt_validator ./prompt_validator
+ENV NLTK_DATA=/usr/local/share/nltk_data
+RUN mkdir -p $NLTK_DATA && \
+    python -m textblob.download_corpora lite && \
+    python -m nltk.downloader -d $NLTK_DATA punkt punkt_tab averaged_perceptron_tagger wordnet omw-1.4
+
+# Copy code
+COPY . .
+COPY prompt_advisor ./prompt_advisor
 
 # Create non-root user
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app /usr/local/share/nltk_data
 USER appuser
 
-# Expose port
 EXPOSE 8000
 
-# Environment variables (can be overridden by Kubernetes ConfigMap)
 ENV HOST=0.0.0.0
 ENV PORT=8000
 ENV ATPL_SCHEMA_URL=https://raw.githubusercontent.com/SentriusLLC/atpl/main/atpl.schema.json
@@ -38,5 +42,4 @@ ENV WEIGHT_COMPLIANCE=25
 ENV WEIGHT_PROVENANCE=15
 ENV WEIGHT_AUTONOMY=15
 
-# Run the application
-CMD ["python", "-m", "uvicorn", "prompt_validator.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "-m", "uvicorn", "prompt_advisor.main:app", "--host", "0.0.0.0", "--port", "8000"]

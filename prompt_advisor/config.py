@@ -1,4 +1,4 @@
-"""Configuration management for prompt_validator service."""
+"""Configuration management for prompt_advisor service."""
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 

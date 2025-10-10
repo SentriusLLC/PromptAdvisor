@@ -1,20 +1,22 @@
-"""Main FastAPI application for prompt_validator service."""
+"""Main FastAPI application for prompt_advisor service."""
 import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
+import nltk
 
-from prompt_validator.config import settings
-from prompt_validator.models import (
+
+from prompt_advisor.config import settings
+from prompt_advisor.models import (
     ValidatePromptRequest,
     ValidatePromptResponse,
     CategoryRatings,
     CriteriaResponse,
     Criterion
 )
-from prompt_validator.schema_loader import ATPlSchemaLoader
-from prompt_validator.llm_evaluator import LLMEvaluator
-from prompt_validator.scoring import ScoringEngine
+from prompt_advisor.schema_loader import ATPlSchemaLoader
+from prompt_advisor.llm_evaluator import LLMEvaluator
+from prompt_advisor.scoring import ScoringEngine
 
 # Configure logging
 logging.basicConfig(
@@ -35,7 +37,7 @@ async def lifespan(app: FastAPI):
     # Startup
     global schema_loader, llm_evaluator, scoring_engine
     
-    logger.info("Initializing prompt_validator service...")
+    logger.info("Initializing prompt_advisor service...")
     
     # Initialize schema loader
     schema_loader = ATPlSchemaLoader(settings.atpl_schema_url)
@@ -73,12 +75,36 @@ async def lifespan(app: FastAPI):
     yield
     
     # Shutdown
-    logger.info("Shutting down prompt_validator service...")
+    logger.info("Shutting down prompt_advisor service...")
+
+# --------------------------------------------------
+# PRELOAD NLTK TOKENIZER AT STARTUP
+# --------------------------------------------------
+def preload_nltk_tokenizer():
+    try:
+        logger.info("Preloading NLTK corpora for TextBlob...")
+        nltk.data.find("tokenizers/punkt")
+        nltk.data.find("tokenizers/punkt_tab")
+        nltk.data.find("taggers/averaged_perceptron_tagger")
+        nltk.data.find("corpora/wordnet")
+        nltk.data.find("corpora/omw-1.4")
+        logger.info("NLTK corpora successfully preloaded.")
+    except LookupError as e:
+        logger.warning(f"NLTK resource missing: {e}")
+        nltk.download("punkt")
+        nltk.download("punkt_tab")
+        nltk.download("averaged_perceptron_tagger")
+        nltk.download("wordnet")
+        nltk.download("omw-1.4")
+
+# Call once at startup
+preload_nltk_tokenizer()
+
 
 
 # Create FastAPI app
 app = FastAPI(
-    title="Prompt Validator",
+    title="Prompt Advisor",
     description="ATPL-based prompt validation service",
     version="0.1.0",
     lifespan=lifespan
@@ -89,7 +115,7 @@ app = FastAPI(
 async def root():
     """Root endpoint."""
     return {
-        "service": "prompt_validator",
+        "service": "prompt_advisor",
         "version": "0.1.0",
         "status": "running"
     }
@@ -233,7 +259,7 @@ async def validate_prompt(request: ValidatePromptRequest):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
-        "prompt_validator.main:app",
+        "prompt_advisor.main:app",
         host=settings.host,
         port=settings.port,
         reload=True

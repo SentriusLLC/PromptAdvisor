@@ -1,1 +1,1 @@
-"""Tests for prompt_validator service."""
+"""Tests for prompt_advisor service."""

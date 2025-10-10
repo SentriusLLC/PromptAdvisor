@@ -1,8 +1,8 @@
-"""Tests for prompt_validator service."""
+"""Tests for prompt_advisor service."""
 import pytest
 from fastapi.testclient import TestClient
-from prompt_validator.main import app
-from prompt_validator.llm_evaluator import LLMEvaluator
+from prompt_advisor.main import app
+from prompt_advisor.llm_evaluator import LLMEvaluator
 
 client = TestClient(app)
 
@@ -12,7 +12,7 @@ def test_root_endpoint():
     response = client.get("/")
     assert response.status_code == 200
     data = response.json()
-    assert data["service"] == "prompt_validator"
+    assert data["service"] == "prompt_advisor"
     assert data["status"] == "running"
     assert "version" in data
 
